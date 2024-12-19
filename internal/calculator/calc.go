@@ -1,50 +1,12 @@
-package main
+package calc
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
 	"strconv"
 	"strings"
-	"time"
 )
 
-type RequestBody struct {
-	Expression string `json:"expression"`
-}
-type ResponseBody struct {
-	Result float64 `json:"result"`
-}
-type ResponseErrorBody struct {
-	Error string `json:"error"`
-}
-
-func CalculateHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	var reqBody RequestBody
-	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
-		return
-	}
-
-	result, err := Calc(reqBody.Expression)
-	if err != nil {
-		response := ResponseErrorBody{Error: err.Error()}
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(response)
-		return
-	}
-
-	response := ResponseBody{Result: result}
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(response)
-
-}
 func Calc(expression string) (float64, error) {
 	tokens := tokenize(expression)
 	postfix, err := infixToPostfix(tokens)
@@ -182,20 +144,4 @@ func precedence(op string) int {
 	default:
 		return 0
 	}
-}
-func StartServer(timeout time.Duration) {
-	http.HandleFunc("/api/v1/calculate", CalculateHandler)
-	srv := &http.Server{
-		Addr:         ":8080",
-		ReadTimeout:  timeout,
-		WriteTimeout: timeout,
-	}
-	err := srv.ListenAndServe()
-	if err != nil {
-		fmt.Println("Error starting server:", err)
-	}
-}
-
-func main() {
-	StartServer(0)
 }
