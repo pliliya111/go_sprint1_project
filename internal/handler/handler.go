@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/pliliya111/go_sprint1_project/internal/calculator/calc"
+	"github.com/pliliya111/go_sprint1_project/internal/calculator"
 )
 
 type RequestBody struct {
@@ -29,7 +29,7 @@ func CalculateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := calc.Calc(reqBody.Expression)
+	result, err := calculator.Calc(reqBody.Expression)
 	if err != nil {
 		response := ResponseErrorBody{Error: err.Error()}
 		w.WriteHeader(http.StatusBadRequest)
